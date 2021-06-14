@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+	
+    tools {
+        nodejs "node_v14"
+        maven "maven"
+    }
+    
+    stages {
+        stage ('Delete old dir') {
+            steps {
+                sh '''
+                    rm -rf UI
+                    rm -rf Gateway
+                '''
+                
+            }
+        }
+        
+        stage ('PULL CODE') {
+            
+            steps {
+                dir('UI') {
+                    git branch: 'master', credentialsId: 'DeepthiBathula92', url: 'https://DeepthiBathula92@bitbucket.org/TetraEngineering/fusion-ui.git'
+                }
+                
+                dir('Gateway') {
+                    git branch: 'master', credentialsId: 'DeepthiBathula92', url: 'https://DeepthiBathula92@bitbucket.org/TetraEngineering/fusion-gateway.git'
+                }
+            }
+			}
+			
+			stage('Sonarqube') {
+             environment {
+                scannerHome = tool 'SonarQubeScanner'
+    }
+               steps {
+        withSonarQubeEnv('sonar') {
+            sh "${scannerHome}/bin/sonar-scanner"
+        }
+   }
+}
+        }
+
+       
+            }
